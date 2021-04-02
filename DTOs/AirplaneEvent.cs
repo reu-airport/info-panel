@@ -10,7 +10,7 @@ namespace InfoPanel.DTOs
 		Departure
 	}
 
-	public class AirplaneEventW
+	public class AirplaneEvent
 	{
 		public Guid PlaneId { get; set; }
 
