@@ -1,15 +1,14 @@
-package ru.reu.time.entities
+package ru.reu.time.vo
 
+import ru.reu.time.entities.Airplane
 import ru.reu.time.vo.TypeAirplane
 import java.time.Instant
 import java.util.*
 
-data class Flight(
+data class FlightVO(
     var id: UUID? = null,
     var direction: TypeAirplane? = null,
-    var time: Instant? = null,
-    var checkInBeginTime: Instant? = null,
-    var checkInEndTime: Instant? = null,
+    var time: Long? = null,
     var hasVips: Boolean = false,
     var hasBaggage: Boolean = false,
     var airplane: Airplane,

@@ -9,11 +9,11 @@ class RabbitmqConfiguration {
 
     @Bean
     fun bindings(): Declarables {
-        val queue = Queue("airplaneRequest", false)
+        val queue = Queue("airplaneEvent", false)
         val topicExchange = TopicExchange("")
         return Declarables(
             queue,
-            BindingBuilder.bind(queue).to(topicExchange).with("airplaneRequest")
+            BindingBuilder.bind(queue).to(topicExchange).with("airplaneEvent")
         )
     }
 

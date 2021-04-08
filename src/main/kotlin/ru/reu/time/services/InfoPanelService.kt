@@ -1,11 +1,14 @@
 package ru.reu.time.services
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import ru.reu.time.client.TimeClient
+import ru.reu.time.entities.Airplane
 import ru.reu.time.entities.Flight
+import ru.reu.time.vo.FlightVO
 import ru.reu.time.vo.TypeAirplane
 import java.time.Instant
 import java.util.*
@@ -19,15 +22,27 @@ class InfoPanelService(
 
     private val log = LoggerFactory.getLogger(javaClass)
 
+    private val mapper = jacksonObjectMapper()
+
     var flights = ConcurrentHashMap<UUID, Flight>()
+    var airplanes = ConcurrentHashMap<UUID, Airplane>()
 
     fun getById(flightId: UUID): Flight? = flights[flightId]
 
     fun save(flight: Flight): Flight {
-        synchronized(this) {
+        synchronized(flights) {
             val uuid = UUID.randomUUID()
             return flights.getOrPut(uuid) {
                 flight.apply { this.id = uuid }
+            }
+        }
+    }
+
+    fun saveAirplane(airplane: Airplane): Airplane {
+        synchronized(airplanes) {
+            val uuid = UUID.randomUUID()
+            return airplanes.getOrPut(uuid) {
+                airplane.apply { this.id = uuid }
             }
         }
     }
@@ -44,8 +59,12 @@ class InfoPanelService(
         val time = timeClient.getTime()
         val instantTime = Instant.ofEpochMilli(time?.time!! + time.factor!!)
         flights
-            .filter { it.value.checkInEndTime?.isAfter(instantTime) ?: false }
-            .map { sendAirplaneEvent(it.value.apply { this.id = it.key }) }
+            .filter { instantTime?.isAfter(it.value.time) ?: false }
+            .map {
+                sendAirplaneEvent(it.value.apply { this.id = it.key })
+                airplanes.remove(it.value.airplane.id)
+                flights.remove(it.key)
+            }
     }
 
     @Scheduled(fixedDelay = 10000)
@@ -54,10 +73,20 @@ class InfoPanelService(
         val time = timeClient.getTime()
         val instantTime = Instant.ofEpochMilli(time?.time!! + time.factor!!)
         (0..(5 - flights.size)).forEach { _ ->
+            val airplaneId = saveAirplane(
+                Airplane(
+                    null,
+                    (0..100).random(),
+                    (0..100).random() > 51
+                )
+            ).also {
+                log.info("Successful created airplane: ${it.id}")
+            }
             save(
                 Flight(
                     null,
-                    if ((0..100).random() > 51) TypeAirplane.ARRIVAL else TypeAirplane.DEPARTURE
+                    if ((0..100).random() > 51) TypeAirplane.ARRIVAL else TypeAirplane.DEPARTURE,
+                    airplane = airplaneId
                 ).apply {
                     if (this.direction == TypeAirplane.ARRIVAL) {
                         this.checkInBeginTime = instantTime.plusSeconds(30)
@@ -68,12 +97,13 @@ class InfoPanelService(
                         this.checkInEndTime = instantTime.minusSeconds(100)
                         this.time = instantTime.plusSeconds(10)
                     }
-                    this.airplane = null
                     this.hasBaggage = (0..100).random() > 51
                     this.hasVips = (0..100).random() < 51
                 }
             ).also {
                 log.info("Successful created flight: ${it.id}")
+                airplanes.getValue(airplaneId.id!!).isFlight = true
+                log.info("Successful added flight: ${it.id} to $airplaneId")
             }
         }
     }
@@ -81,9 +111,19 @@ class InfoPanelService(
     fun sendAirplaneEvent(flight: Flight) {
         rabbitTemplate.convertAndSend(
             "airplaneEvent",
-            flight
+            mapper.writeValueAsString(
+                FlightVO(
+                    flight.id,
+                    flight.direction,
+                    flight.time!!.toEpochMilli(),
+                    flight.hasVips,
+                    flight.hasBaggage,
+                    flight.airplane,
+                    flight.gateNum
+                )
+            )
         )
-        log.info("Successful send to flight: ${flight.id}")
+        log.info("Successful send to flight: $flight")
     }
 
 }
