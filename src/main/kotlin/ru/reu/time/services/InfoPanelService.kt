@@ -99,6 +99,7 @@ class InfoPanelService(
                     }
                     this.hasBaggage = (0..100).random() > 51
                     this.hasVips = (0..100).random() < 51
+                    this.gateNum = (0..100).random()
                 }
             ).also {
                 log.info("Successful created flight: ${it.id}")
