@@ -89,9 +89,9 @@ class InfoPanelService(
                     airplane = airplaneId
                 ).apply {
                     if (this.direction == TypeAirplane.ARRIVAL) {
-                        this.checkInBeginTime = instantTime.plusSeconds(30)
-                        this.checkInEndTime = instantTime.plusSeconds(40)
-                        this.time = instantTime.plusSeconds(50)
+                        this.checkInBeginTime = instantTime.plusSeconds(10L + (1..10).random())
+                        this.checkInEndTime = instantTime.plusSeconds(20L + (5..30).random())
+                        this.time = instantTime.plusSeconds(50L + (5..30).random())
                     } else {
                         this.checkInBeginTime = instantTime.minusSeconds(200)
                         this.checkInEndTime = instantTime.minusSeconds(100)
@@ -104,7 +104,7 @@ class InfoPanelService(
             ).also {
                 log.info("Successful created flight: ${it.id}")
                 airplanes.getValue(airplaneId.id!!).isFlight = true
-                log.info("Successful added flight: ${it.id} to $airplaneId")
+                log.info("Successful added flight: $it to $airplaneId")
             }
         }
     }
