@@ -50,7 +50,9 @@ class InfoPanelService(
     fun flights(): List<Flight> {
         val time = timeClient.getTime()
         val instantTime = Instant.ofEpochMilli(time?.time!!)
-        return flights.filter { it.value.checkInBeginTime?.isBefore(instantTime) ?: false }
+        return flights
+            .filter { it.value.direction == TypeAirplane.ARRIVAL }
+            .filter { it.value.checkInBeginTime?.isBefore(instantTime) ?: false }
             .map { it.value.apply { this.id = it.key } }
     }
 
@@ -99,7 +101,7 @@ class InfoPanelService(
                     }
                     this.hasBaggage = (0..100).random() > 51
                     this.hasVips = (0..100).random() < 51
-                    this.gateNum = (0..100).random()
+                    this.gateNum = (1..4).random()
                 }
             ).also {
                 log.info("Successful created flight: ${it.id}")
