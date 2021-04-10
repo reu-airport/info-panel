@@ -91,7 +91,7 @@ class InfoPanelService(
                     log.info("Successful created airplane: ${it.id}")
                 }
             } else {
-                if (airplanes.filter { !it.value.isFlight }.values.isEmpty())
+                if (!airplanes.filter { !it.value.isFlight }.values.isEmpty())
                     airplanes.filter { !it.value.isFlight }.values.first()
                 else return
             }
