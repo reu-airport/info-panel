@@ -49,7 +49,7 @@ class InfoPanelService(
 
     fun flights(): List<Flight> {
         val time = timeClient.getTime()
-        val instantTime = Instant.ofEpochMilli(time?.time!!)
+        val instantTime = Instant.ofEpochMilli(time.time)
         return flights
             .filter { it.value.direction == TypeAirplane.ARRIVAL }
             .filter { it.value.checkInBeginTime?.isBefore(instantTime) ?: false }
@@ -58,8 +58,10 @@ class InfoPanelService(
 
     @Scheduled(fixedDelay = 1000)
     fun checkFlights() {
+        log.info("Started checkFlights")
         val time = timeClient.getTime()
-        val instantTime = Instant.ofEpochMilli(time?.time!!)
+        val instantTime = Instant.ofEpochMilli(time.time)
+        log.info("Getting time $instantTime")
         flights
             .filter { instantTime?.isAfter(it.value.time) ?: false }
             .map {
@@ -72,8 +74,10 @@ class InfoPanelService(
     @Scheduled(fixedDelay = 10000)
     fun createFlights() {
         if (flights.size > 5) return
+        log.info("Started getTime")
         val time = timeClient.getTime()
-        val instantTime = Instant.ofEpochMilli(time?.time!!)
+        val instantTime = Instant.ofEpochMilli(time.time)
+        log.info("Getting time $instantTime")
         (0..(5 - flights.size)).forEach { _ ->
             val airplaneId = saveAirplane(
                 Airplane(
