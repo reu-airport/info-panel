@@ -113,8 +113,8 @@ class InfoPanelService(
                 ).apply {
                     if (this.direction == TypeAirplane.ARRIVAL) {
                         this.checkInBeginTime = instantTime.minusSeconds(0L + (1..10).random())
-                        this.checkInEndTime = instantTime.plusSeconds(10L + (5..20).random())
-                        this.time = instantTime.plusSeconds(30L + (5..10).random())
+                        this.checkInEndTime = instantTime.plusSeconds(30L + (5..20).random())
+                        this.time = instantTime.plusSeconds(40L + (5..10).random())
                     } else {
                         this.checkInBeginTime = instantTime.minusSeconds(200)
                         this.checkInEndTime = instantTime.minusSeconds(100)
