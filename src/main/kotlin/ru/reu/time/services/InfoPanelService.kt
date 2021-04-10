@@ -67,11 +67,8 @@ class InfoPanelService(
             .filter { instantTime.isAfter(it.value.time) }
             .map {
                 sendAirplaneEvent(it.value.apply { this.id = it.key })
-
-                if (it.value.direction == TypeAirplane.DEPARTURE) {
-                    airplanes.get(it.value.airplane.id)?.isFlight = false
-                    flights.remove(it.key)
-                }
+                airplanes.get(it.value.airplane.id)?.isFlight = false
+                flights.remove(it.key)
             }
     }
 
