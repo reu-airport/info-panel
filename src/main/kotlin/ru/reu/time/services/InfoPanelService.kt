@@ -68,6 +68,10 @@ class InfoPanelService(
             .map {
                 sendAirplaneEvent(it.value.apply { this.id = it.key })
                 airplanes.get(it.value.airplane.id)?.isFlight = false
+                airplanes.get(it.value.airplane.id)?.direction =
+                    if (airplanes.get(it.value.airplane.id)?.direction == TypeAirplane.ARRIVAL)
+                        TypeAirplane.DEPARTURE
+                    else TypeAirplane.ARRIVAL
                 flights.remove(it.key)
             }
     }
@@ -95,10 +99,16 @@ class InfoPanelService(
                     airplanes.filter { !it.value.isFlight }.values.first()
                 else return
             }
+            val direction = if ((0..100).random() > 51) TypeAirplane.ARRIVAL else TypeAirplane.DEPARTURE
+            if (airplanes
+                    .filter { air -> air.value.direction == direction }
+                    .filter { air -> !air.value.isFlight }.values.isNotEmpty()
+            ) return
+
             save(
                 Flight(
                     null,
-                    if ((0..100).random() > 51) TypeAirplane.ARRIVAL else TypeAirplane.DEPARTURE,
+                    direction,
                     airplane = airplaneId
                 ).apply {
                     if (this.direction == TypeAirplane.ARRIVAL) {
@@ -116,7 +126,12 @@ class InfoPanelService(
                 }
             ).also {
                 log.info("Successful created flight: ${it.id}")
-                airplanes.getValue(airplaneId.id!!).isFlight = true
+                val airplane = airplanes
+                    .filter { air -> air.value.direction == it.direction }
+                    .filter { air -> !air.value.isFlight }.values.first()
+                airplanes.getValue(airplane.id!!).isFlight = true
+                airplanes.getValue(airplane.id!!).direction = it.direction
+                airplanes.getValue(airplane.id!!).refuelNeeded = (0..100).random() > 51
                 log.info("Successful added flight: $it to $airplaneId")
             }
         }
