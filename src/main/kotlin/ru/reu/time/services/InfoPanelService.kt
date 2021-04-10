@@ -74,11 +74,11 @@ class InfoPanelService(
 
     @Scheduled(fixedDelay = 10000)
     fun createFlights() {
-        if (flights.size > 5) return
+        if (flights.size > 2) return
         log.info("Started getTime")
         val instantTime = time()
         log.info("Getting time $instantTime")
-        (0..(5 - flights.size)).forEach { _ ->
+        (0..(2 - flights.size)).forEach { _ ->
             val airplaneId = saveAirplane(
                 Airplane(
                     null,
