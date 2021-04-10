@@ -12,6 +12,6 @@ data class Flight(
     var checkInEndTime: Instant? = null,
     var hasVips: Boolean = false,
     var hasBaggage: Boolean = false,
-    var airplane: Airplane,
+    var airplane: Airplane? = null,
     var gateNum: Int? = null
 )

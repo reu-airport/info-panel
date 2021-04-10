@@ -8,5 +8,5 @@ data class Airplane(
     var capacity: Int? = null,
     var refuelNeeded: Boolean? = null,
     var isFlight: Boolean = false,
-    var direction: TypeAirplane? = null
+    var direction: TypeAirplane = TypeAirplane.ARRIVAL
 )

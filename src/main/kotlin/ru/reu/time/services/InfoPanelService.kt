@@ -67,9 +67,9 @@ class InfoPanelService(
             .filter { instantTime.isAfter(it.value.time) }
             .map {
                 sendAirplaneEvent(it.value.apply { this.id = it.key })
-                airplanes.get(it.value.airplane.id)?.isFlight = false
-                airplanes.get(it.value.airplane.id)?.direction =
-                    if (airplanes.get(it.value.airplane.id)?.direction == TypeAirplane.ARRIVAL)
+                airplanes.get(it.value.airplane?.id)?.isFlight = false
+                airplanes.get(it.value.airplane?.id)?.direction =
+                    if (airplanes.get(it.value.airplane?.id)?.direction == TypeAirplane.ARRIVAL)
                         TypeAirplane.DEPARTURE
                     else TypeAirplane.ARRIVAL
                 flights.remove(it.key)
@@ -82,23 +82,23 @@ class InfoPanelService(
         log.info("Started getTime")
         val instantTime = time()
         log.info("Getting time $instantTime")
-        (0..(2 - flights.size)).forEach { _ ->
-            val airplaneId = if (airplanes.size != 2) {
-                saveAirplane(
-                    Airplane(
-                        null,
-                        (0..100).random(),
-                        (0..100).random() > 51,
-                        isFlight = false
-                    )
-                ).also {
-                    log.info("Successful created airplane: ${it.id}")
-                }
-            } else {
-                if (!airplanes.filter { !it.value.isFlight }.values.isEmpty())
-                    airplanes.filter { !it.value.isFlight }.values.first()
-                else return
+
+
+        (0..(2 - airplanes.size)).forEach { _ ->
+            if (airplanes.size > 2) return@forEach
+            saveAirplane(
+                Airplane(
+                    null,
+                    (0..100).random(),
+                    (0..100).random() > 51,
+                    isFlight = false
+                )
+            ).also {
+                log.info("Successful created airplane: ${it.id}")
             }
+        }
+        
+        (0..(2 - flights.size)).forEach { _ ->
             val direction = if ((0..100).random() > 51) TypeAirplane.ARRIVAL else TypeAirplane.DEPARTURE
             if (airplanes
                     .filter { air -> air.value.direction == direction }
@@ -108,8 +108,7 @@ class InfoPanelService(
             save(
                 Flight(
                     null,
-                    direction,
-                    airplane = airplaneId
+                    direction
                 ).apply {
                     if (this.direction == TypeAirplane.ARRIVAL) {
                         this.checkInBeginTime = instantTime.plusSeconds(10L + (1..10).random())
@@ -130,9 +129,10 @@ class InfoPanelService(
                     .filter { air -> air.value.direction == it.direction }
                     .filter { air -> !air.value.isFlight }.values.first()
                 airplanes.getValue(airplane.id!!).isFlight = true
-                airplanes.getValue(airplane.id!!).direction = it.direction
+                airplanes.getValue(airplane.id!!).direction = it.direction!!
                 airplanes.getValue(airplane.id!!).refuelNeeded = (0..100).random() > 51
-                log.info("Successful added flight: $it to $airplaneId")
+                flights.get(it.id)?.airplane = airplane
+                log.info("Successful added flight: $it to ${airplane.id}")
             }
         }
     }
@@ -147,7 +147,7 @@ class InfoPanelService(
                     flight.time!!.toEpochMilli(),
                     flight.hasVips,
                     flight.hasBaggage,
-                    flight.airplane,
+                    flight.airplane!!,
                     flight.gateNum
                 )
             )
