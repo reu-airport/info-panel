@@ -84,14 +84,15 @@ class InfoPanelService(
         log.info("Getting time $instantTime")
 
 
-        (0..(2 - airplanes.size)).forEach { _ ->
+        (0..(1 - airplanes.size)).forEach { i ->
             if (airplanes.size > 2) return@forEach
             saveAirplane(
                 Airplane(
                     null,
                     (0..100).random(),
                     (0..100).random() > 51,
-                    isFlight = false
+                    isFlight = false,
+                    if (i == 1) TypeAirplane.DEPARTURE else TypeAirplane.ARRIVAL
                 )
             ).also {
                 log.info("Successful created airplane: ${it.id}")
