@@ -64,11 +64,14 @@ class InfoPanelService(
         val instantTime = time()
         log.info("Getting time $instantTime")
         flights
-            .filter { instantTime.isAfter(it.value.time) ?: false }
+            .filter { instantTime.isAfter(it.value.time) }
             .map {
                 sendAirplaneEvent(it.value.apply { this.id = it.key })
-                airplanes.remove(it.value.airplane.id)
-                flights.remove(it.key)
+
+                if (it.value.direction == TypeAirplane.DEPARTURE) {
+                    airplanes.remove(it.value.airplane.id)
+                    flights.remove(it.key)
+                }
             }
     }
 
