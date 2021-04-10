@@ -9,7 +9,7 @@ class RabbitmqConfiguration {
 
     @Bean
     fun bindings(): Declarables {
-        val queue = Queue("airplaneEvent", false)
+        val queue = Queue("airplaneEvent", true)
         val topicExchange = TopicExchange("")
         return Declarables(
             queue,
