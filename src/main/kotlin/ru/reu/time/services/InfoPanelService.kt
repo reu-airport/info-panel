@@ -69,7 +69,7 @@ class InfoPanelService(
                 sendAirplaneEvent(it.value.apply { this.id = it.key })
 
                 if (it.value.direction == TypeAirplane.DEPARTURE) {
-                    airplanes.remove(it.value.airplane.id)
+                    airplanes.get(it.value.airplane.id)?.isFlight = false
                     flights.remove(it.key)
                 }
             }
@@ -82,14 +82,18 @@ class InfoPanelService(
         val instantTime = time()
         log.info("Getting time $instantTime")
         (0..(2 - flights.size)).forEach { _ ->
-            val airplaneId = saveAirplane(
-                Airplane(
-                    null,
-                    (0..100).random(),
-                    (0..100).random() > 51
-                )
-            ).also {
-                log.info("Successful created airplane: ${it.id}")
+            val airplaneId = if (airplanes.size != 2) {
+                 saveAirplane(
+                    Airplane(
+                        null,
+                        (0..100).random(),
+                        (0..100).random() > 51
+                    )
+                ).also {
+                    log.info("Successful created airplane: ${it.id}")
+                }
+            } else {
+                airplanes.filter { !it.value.isFlight }.values.first()
             }
             save(
                 Flight(
