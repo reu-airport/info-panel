@@ -83,17 +83,20 @@ class InfoPanelService(
         log.info("Getting time $instantTime")
         (0..(2 - flights.size)).forEach { _ ->
             val airplaneId = if (airplanes.size != 2) {
-                 saveAirplane(
+                saveAirplane(
                     Airplane(
                         null,
                         (0..100).random(),
-                        (0..100).random() > 51
+                        (0..100).random() > 51,
+                        isFlight = false
                     )
                 ).also {
                     log.info("Successful created airplane: ${it.id}")
                 }
             } else {
-                airplanes.filter { !it.value.isFlight }.values.first()
+                if (airplanes.filter { !it.value.isFlight }.values.isEmpty())
+                    airplanes.filter { !it.value.isFlight }.values.first()
+                else return
             }
             save(
                 Flight(
