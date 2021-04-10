@@ -100,9 +100,9 @@ class InfoPanelService(
                 else return
             }
             val direction = if ((0..100).random() > 51) TypeAirplane.ARRIVAL else TypeAirplane.DEPARTURE
-            if (airplanes
+            if (!airplanes
                     .filter { air -> air.value.direction == direction }
-                    .filter { air -> !air.value.isFlight }.values.isNotEmpty()
+                    .filter { air -> !air.value.isFlight }.values.isEmpty()
             ) return
 
             save(
